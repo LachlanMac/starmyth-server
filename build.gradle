@@ -7,7 +7,24 @@
  */
 
 // Apply the java-library plugin to add support for Java Library
+
+
+
+apply plugin: 'java'
 apply plugin: 'java-library'
+
+
+task fatJar(type: Jar) {
+	manifest {
+        attributes 'Implementation-Title': 'Gradle Jar File Example',  
+        	'Implementation-Version': 1.001,
+        	'Main-Class': 'com.pineconeindustries.server.Server'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -28,4 +45,6 @@ dependencies {
     
     compile group:'org.xerial', name:'sqlite-jdbc', version:'3.8.11.2'
 }
+
+
 

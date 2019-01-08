@@ -1,4 +1,4 @@
-package com.pineconeindustries.server.data;
+package com.pineconeindustries.server.networking;
 
 public class Packet {
 
@@ -14,6 +14,7 @@ public class Packet {
 	public static final int SHIP_INFO_PACKET = 3000;
 	public static final int SHIP_LAYOUT_PACKET = 3001;
 	public static final int SHIP_DATA_PACKET = 3002;
+	public static final int NPC_INFO_PACKET = 5000;
 
 	public Packet(int playerID, int type, String data) {
 		this.data = data;

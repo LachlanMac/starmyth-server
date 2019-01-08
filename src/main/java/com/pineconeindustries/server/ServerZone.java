@@ -8,13 +8,15 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import com.pineconeindustries.server.data.Packet;
-import com.pineconeindustries.server.data.PacketParser;
 import com.pineconeindustries.server.data.PlayerData;
-import com.pineconeindustries.server.data.ShipData;
+import com.pineconeindustries.server.data.Ship;
 import com.pineconeindustries.server.data.Structure;
 import com.pineconeindustries.server.database.Database;
 import com.pineconeindustries.server.log.Log;
+import com.pineconeindustries.server.networking.Packet;
+import com.pineconeindustries.server.networking.PacketParser;
+import com.pineconeindustries.server.npcs.NPC;
+import com.pineconeindustries.server.utils.MathUtils;
 
 public class ServerZone implements Runnable {
 
@@ -30,7 +32,8 @@ public class ServerZone implements Runnable {
 	PrintWriter out;
 
 	ArrayBlockingQueue<PlayerConnection> players;
-	ArrayBlockingQueue<ShipData> ships;
+	ArrayBlockingQueue<Ship> ships;
+	ArrayBlockingQueue<NPC> npcs;
 	ArrayBlockingQueue<Packet> sendToAllQueue;
 
 	ArrayBlockingQueue<Packet> sendToPlayer;
@@ -48,7 +51,7 @@ public class ServerZone implements Runnable {
 		senderThread = new SenderThread(this);
 		players = new ArrayBlockingQueue<PlayerConnection>(1024);
 
-		sendToAllQueue = new ArrayBlockingQueue<Packet>(1024);
+		sendToAllQueue = new ArrayBlockingQueue<Packet>(2048);
 
 		sendToPlayer = new ArrayBlockingQueue<Packet>(1024);
 
@@ -73,11 +76,11 @@ public class ServerZone implements Runnable {
 
 	}
 
-	public ShipData getShipDataByID(int id) {
+	public Ship getShipDataByID(int id) {
 
-		ShipData data = null;
+		Ship data = null;
 
-		for (ShipData ship : ships) {
+		for (Ship ship : ships) {
 
 			if (id == ship.getID()) {
 				data = ship;
@@ -104,6 +107,18 @@ public class ServerZone implements Runnable {
 		}
 
 		return data;
+
+	}
+
+	public void loadNPCs() {
+
+		npcs = db.loadNPCs(port);
+
+		for (NPC n : npcs) {
+
+			n.setStructure(getStructureAt(n.getLoc().x, n.getLoc().y));
+
+		}
 
 	}
 
@@ -162,7 +177,7 @@ public class ServerZone implements Runnable {
 
 		System.out.println("CHECKIGN STRUCTURE AT QUADRANT " + quadrantX + " , " + quadrantY);
 
-		for (ShipData s : ships) {
+		for (Ship s : ships) {
 
 			if (quadrantX == s.getQuadrantX() && quadrantY == s.getQuadrantY()) {
 				struct = s;
@@ -179,7 +194,7 @@ public class ServerZone implements Runnable {
 		int shipCount = 0;
 		StringBuilder sb = new StringBuilder();
 
-		for (ShipData ship : ships) {
+		for (Ship ship : ships) {
 			shipCount++;
 			sb.append(ship.getID() + "-" + ship.getName() + "-" + ship.getStructureClass() + "-" + ship.getQuadrantX()
 					+ "-" + ship.getQuadrantY() + "-" + ship.getChecksum() + "=");
@@ -222,6 +237,21 @@ public class ServerZone implements Runnable {
 
 	}
 
+	public void queueNPCInfo() {
+
+		for (NPC npc : npcs) {
+
+			String data = npc.getId() + "=" + npc.getName() + "=" + npc.getFactionID() + "="
+					+ MathUtils.getStringFromVector(npc.getLoc()) + "=" + npc.getStructure().getID();
+			Packet p = new Packet(0, Packet.NPC_INFO_PACKET, data);
+			p.encode();
+
+			sendToAllQueue.add(p);
+
+		}
+
+	}
+
 	public void sendAll() {
 
 		while (!sendToAllQueue.isEmpty()) {
@@ -237,6 +267,7 @@ public class ServerZone implements Runnable {
 			for (PlayerConnection p : players) {
 
 				if (p.isConnected()) {
+
 					p.send(outPacket);
 					p.sendFromQueue();
 				}
@@ -276,6 +307,7 @@ class SenderThread extends Thread {
 	public SenderThread(ServerZone zone) {
 		this.zone = zone;
 		zone.loadShips();
+		zone.loadNPCs();
 	}
 
 	@Override
@@ -285,10 +317,8 @@ class SenderThread extends Thread {
 
 		while (true) {
 
-			counter++;
-
 			try {
-				Thread.sleep(1);
+				Thread.sleep(5);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -309,19 +339,6 @@ class SenderThread extends Thread {
 					zone.resetState();
 				}
 
-			case 999:
-
-				ShipData s = zone.getShipDataByID(100);
-				PlayerData d = zone.getDataByID(998);
-
-				if (d != null && s != null) {
-
-					s.getTileAt(d.getX(), d.getY());
-
-				}
-
-				break;
-
 			case 400:
 
 				data = zone.getPlayerUpdatePacket();
@@ -340,8 +357,11 @@ class SenderThread extends Thread {
 				counter = 0;
 			}
 
+			zone.queueNPCInfo();
+
 			zone.sendAll();
 
+			counter++;
 		}
 
 	}

@@ -1,9 +1,11 @@
 package com.pineconeindustries.server;
 
+import javax.swing.JFrame;
+
 import com.pineconeindustries.server.database.Database;
 import com.pineconeindustries.server.log.Log;
 
-public class Server {
+public class Server extends JFrame {
 
 	public static String TEST_IP = "127.0.0.1";
 	public static String DB_PATH = "data/data.db";
@@ -13,16 +15,24 @@ public class Server {
 	ServerZone zone;
 
 	public Server() {
+
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setSize(300, 100);
+		this.setTitle("Server");
+		this.setVisible(true);
+
 		init();
 	}
 
 	public static void main(String[] args) {
 
-		TEST_IP = args[0];
-		DB_PATH = args[1];
+		if (args.length > 0) {
 
-		Log.print("Parameters : { " + TEST_IP + " , " + DB_PATH + "}");
+			TEST_IP = args[0];
+			DB_PATH = args[1];
 
+			Log.print("Parameters : { " + TEST_IP + " , " + DB_PATH + "}");
+		}
 		new Server();
 	}
 

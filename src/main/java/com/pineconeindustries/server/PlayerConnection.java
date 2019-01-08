@@ -6,13 +6,14 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.ArrayBlockingQueue;
-import com.pineconeindustries.server.data.Packet;
-import com.pineconeindustries.server.data.PacketParser;
+
 import com.pineconeindustries.server.data.PlayerData;
 import com.pineconeindustries.server.data.Structure;
 import com.pineconeindustries.server.database.Database;
 import com.pineconeindustries.server.debug.Debug;
 import com.pineconeindustries.server.log.Log;
+import com.pineconeindustries.server.networking.Packet;
+import com.pineconeindustries.server.networking.PacketParser;
 
 public class PlayerConnection implements Runnable {
 

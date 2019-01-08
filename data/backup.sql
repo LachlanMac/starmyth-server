@@ -33,13 +33,26 @@ CREATE TABLE sectors(
                 FOREIGN KEY(faction_id) REFERENCES factions(faction_id)
                 );
 
+DROP TABLE IF EXISTS npcs;
+CREATE TABLE npcs(
+		npc_id INTEGER PRIMARY KEY ASC,
+		npc_name TEXT,
+		x_pos FLOAT,
+		y_pos FLOAT,
+		faction_id INTEGER,
+		sector_id INTEGER,
+		structure_id INTEGER,
+		FOREIGN KEY(faction_id) REFERENCES factions(faction_id),
+		FOREIGN KEY(sector_id) REFERENCES sectors(sector_id)
+);
+
 DROP TABLE IF EXISTS characters;
 CREATE TABLE characters(
                  character_id INTEGER PRIMARY KEY ASC,
                  account_id INTEGER,
                  character_name TEXT,
                  character_model INTEGER,
-                 x_pos FLOAT ,
+                 x_pos FLOAT,
                  y_pos FLOAT,
                  sector_id INTEGER,
                  FOREIGN KEY(account_id) REFERENCES users(account_id),
@@ -144,5 +157,7 @@ INSERT INTO "characters" VALUES(998, 1001, 'testclientone', 3954, 0, 0, 27422);
 INSERT INTO "characters" VALUES(999, 1002, 'testclienttwo', 3954, 0, 0, 27422);
 
 
+INSERT INTO "npcs" VALUES(424, 'TheFirstGuy', 4100, 700, 1, 27422, 100);
+INSERT INTO "npcs" VALUES(425, 'TheSecondGuy', 4150, 710, 1, 27422, 100);
 
 COMMIT;

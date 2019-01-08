@@ -10,8 +10,10 @@ import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import com.pineconeindustries.server.data.PlayerData;
-import com.pineconeindustries.server.data.ShipData;
+import com.pineconeindustries.server.data.Ship;
 import com.pineconeindustries.server.log.Log;
+import com.pineconeindustries.server.npcs.NPC;
+import com.pineconeindustries.server.utils.Vector2;
 
 public class Database {
 
@@ -112,11 +114,46 @@ public class Database {
 
 	}
 
-	public ArrayBlockingQueue<ShipData> loadShips(int sector) {
+	public ArrayBlockingQueue<NPC> loadNPCs(int sector) {
+		Log.print("Loading npcs for sector : " + sector);
+		ArrayBlockingQueue<NPC> npcList = new ArrayBlockingQueue<NPC>(1024);
+		String sql = "SELECT npc_id, npc_name, x_pos, y_pos, faction_id FROM npcs WHERE sector_id = ?";
+		PreparedStatement stmt;
+
+		try {
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, sector);
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+
+				int npcID = rs.getInt("npc_id");
+				String npcName = rs.getString("npc_name");
+				float x = rs.getFloat("x_pos");
+				float y = rs.getFloat("y_pos");
+				int faction_id = rs.getInt("faction_id");
+
+				Log.database("Loaded NPC (id :" + npcName + " name:" + npcName + " in sector " + sector);
+
+				NPC npc = new NPC(npcID, npcName, new Vector2(x, y), faction_id, sector);
+
+				npcList.add(npc);
+
+			}
+
+		} catch (SQLException e) {
+			Log.database("Error Loading NPCs From Database");
+			e.printStackTrace();
+		}
+
+		return npcList;
+	}
+
+	public ArrayBlockingQueue<Ship> loadShips(int sector) {
 
 		Log.print("Loading ships for sector : " + sector);
 		String sql = "SELECT ship_id, ship_name, ship_class, x_pos, y_pos, local_x_pos, local_y_pos, file_path FROM ships WHERE sector_id = ?";
-		ArrayBlockingQueue<ShipData> ships = new ArrayBlockingQueue<ShipData>(128);
+		ArrayBlockingQueue<Ship> ships = new ArrayBlockingQueue<Ship>(128);
 		PreparedStatement stmt;
 
 		try {
@@ -137,7 +174,7 @@ public class Database {
 
 				Log.database("Loaded Ship (id :" + shipID + " name:" + shipName + " in sector " + sector);
 
-				ShipData ship = new ShipData(shipID, sector, shipName, shipClass, x, y, localX, localY, 64, 64, path);
+				Ship ship = new Ship(shipID, sector, shipName, shipClass, x, y, localX, localY, 64, 64, path);
 
 				ships.add(ship);
 

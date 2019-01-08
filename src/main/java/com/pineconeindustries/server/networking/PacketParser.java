@@ -1,10 +1,12 @@
-package com.pineconeindustries.server.data;
+package com.pineconeindustries.server.networking;
 
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import com.pineconeindustries.server.PlayerConnection;
 import com.pineconeindustries.server.ServerZone;
 import com.pineconeindustries.server.config.Game;
+import com.pineconeindustries.server.data.PlayerData;
+import com.pineconeindustries.server.data.Ship;
 import com.pineconeindustries.server.log.Log;
 import com.pineconeindustries.server.utils.MathUtils;
 import com.pineconeindustries.server.utils.Vector2;
@@ -18,8 +20,6 @@ public class PacketParser {
 	}
 
 	public void parse(Packet p) {
-
-		System.out.println("GOT PACKET!" + p.getData());
 
 		switch (p.getType()) {
 
@@ -64,7 +64,7 @@ public class PacketParser {
 
 				int shipID = Integer.parseInt(p.getData());
 
-				ShipData s = zone.getShipDataByID(shipID);
+				Ship s = zone.getShipDataByID(shipID);
 
 				if (s != null) {
 

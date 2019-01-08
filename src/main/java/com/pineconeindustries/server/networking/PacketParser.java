@@ -90,9 +90,17 @@ public class PacketParser {
 			ArrayList<PlayerConnection> sendList = new ArrayList<PlayerConnection>();
 
 			for (PlayerConnection player : zone.getPlayers()) {
-				if (pConn.getPlayerData().getLocation().dist(player.getPlayerData().getLocation()) < 700) {
-					sendList.add(player);
+
+				PlayerData playerData = pConn.getPlayerData();
+
+				if (playerData != null) {
+
+					if (playerData.getLocation().dist(player.getPlayerData().getLocation()) < 700) {
+						sendList.add(player);
+					}
+
 				}
+
 			}
 
 			zone.sendToList(p, sendList);

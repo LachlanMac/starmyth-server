@@ -11,6 +11,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import com.pineconeindustries.server.data.PlayerData;
 import com.pineconeindustries.server.data.Ship;
 import com.pineconeindustries.server.data.Structure;
+import com.pineconeindustries.server.data.global.Galaxy;
+import com.pineconeindustries.server.data.map.Sector;
 import com.pineconeindustries.server.database.Database;
 import com.pineconeindustries.server.log.Log;
 import com.pineconeindustries.server.networking.Packet;
@@ -42,11 +44,15 @@ public class ServerZone implements Runnable {
 
 	PacketParser parser;
 	Database db;
+	Galaxy galaxy;
+	Sector sector;
 
-	public ServerZone(int port, String name, Database db) {
+	public ServerZone(Sector sector, Database db, Galaxy galaxy) {
 		this.db = db;
-		this.name = name;
-		this.port = port;
+		this.galaxy = galaxy;
+		this.sector = sector;
+		this.name = sector.getSectorName();
+		this.port = sector.getSectorID();
 		runThread = new Thread(this);
 		senderThread = new SenderThread(this);
 		players = new ArrayBlockingQueue<PlayerConnection>(1024);
@@ -128,6 +134,16 @@ public class ServerZone implements Runnable {
 
 	}
 
+	public void loadRooms() {
+
+		for (Ship s : ships) {
+
+			db.loadRoomDataForShips(s);
+
+		}
+
+	}
+
 	public boolean hasStateChanged() {
 		return stateChange;
 	}
@@ -174,8 +190,6 @@ public class ServerZone implements Runnable {
 		int quadrantY = ((int) y % (128 * 64)) / (128 * 64);
 
 		Structure struct = null;
-
-		System.out.println("CHECKIGN STRUCTURE AT QUADRANT " + quadrantX + " , " + quadrantY);
 
 		for (Ship s : ships) {
 
@@ -308,6 +322,7 @@ class SenderThread extends Thread {
 		this.zone = zone;
 		zone.loadShips();
 		zone.loadNPCs();
+		zone.loadRooms();
 	}
 
 	@Override
@@ -358,6 +373,8 @@ class SenderThread extends Thread {
 			}
 
 			zone.queueNPCInfo();
+
+			// zone.queueRoomInfo();
 
 			zone.sendAll();
 

@@ -5,32 +5,88 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+
+import com.pineconeindustries.server.data.Room.roomType;
+import com.pineconeindustries.server.log.Log;
+import com.pineconeindustries.server.utils.Units;
+import com.pineconeindustries.server.utils.Vector2;
+import com.pineconeindustries.server.utils.Vector2.direction;
 
 public class Structure {
 
+	ArrayList<Room> rooms;
+
 	private int quadrantX, quadrantY, tileWidth, tileHeight, checksum, sectorID, id;
 	private float x, y;
-	private String structureClass, filePath, name, data;
+	private String structureClass, filePath, name, data, roomData;
 	StructureTileData[][] layout;
 
 	public Structure(int id, int sectorID, String name, String structureClass, float x, float y, int quadrantX,
-			int quadrantY, int tileWidth, int tileHeight, String filePath) {
+			int quadrantY) {
 		this.id = id;
 		this.sectorID = sectorID;
 		this.name = name;
 		this.structureClass = structureClass;
 		this.x = x;
 		this.y = y;
+		this.tileHeight = Units.REGION_GRID_SIZE;
+		this.tileWidth = Units.REGION_GRID_SIZE;
 		this.quadrantX = quadrantX;
 		this.quadrantY = quadrantY;
-		this.tileWidth = tileWidth;
-		this.tileHeight = tileHeight;
-		this.filePath = filePath;
+		this.roomData = "";
+		filePath = "ships/" + id + "-" + name;
+
 		layout = new StructureTileData[tileWidth][tileHeight];
+		rooms = new ArrayList<Room>();
 
 		loadShipLayout();
 
 		parseTileData();
+
+	}
+
+	public boolean canMoveToPoint(Vector2 playerCenter, Vector2 destination, Vector2 dir) {
+
+		if (dir.getDirection() == direction.left) {
+			if (dir.y <= 0) {
+				if (!getTileAt(destination.x - 1 + 32, destination.y).isWalkable()) {
+					return false;
+				}
+			} else {
+				if (!getTileAt(destination.x - 1 + 32, destination.y + 32).isWalkable()) {
+					return false;
+				}
+
+			}
+
+		} else if (dir.getDirection() == direction.up) {
+
+			if (!getTileAt(destination.x + 32, destination.y - 1 + 32).isWalkable()) {
+				return false;
+			}
+
+		} else if (dir.getDirection() == direction.down) {
+
+			if (!getTileAt(destination.x + 32, destination.y + 1).isWalkable()) {
+				return false;
+			}
+
+		} else if (dir.getDirection() == direction.right) {
+			if (dir.y <= 0) {
+				if (!getTileAt(destination.x + 1 + 32, destination.y).isWalkable()) {
+					return false;
+				}
+
+			} else {
+				if (!getTileAt(destination.x + 1 + 32, destination.y + 32).isWalkable()) {
+					return false;
+				}
+			}
+
+		}
+
+		return true;
 
 	}
 
@@ -48,14 +104,107 @@ public class Structure {
 
 	}
 
+	public void addRoom(Room r) {
+		rooms.add(r);
+	}
+
+	public Room getRoomByID(int id) {
+		Room room = null;
+		for (Room r : rooms) {
+
+			if (r.getRoomID() == id) {
+				room = r;
+				break;
+			}
+
+		}
+
+		return room;
+
+	}
+
+	public ArrayList<Room> getRooms() {
+		return rooms;
+	}
+
 	public void loadShipLayout() {
 
 		BufferedReader br;
 
 		try {
-			br = new BufferedReader(new FileReader(new File("ships/" + filePath)));
+			br = new BufferedReader(new FileReader(new File(filePath + ".txt")));
 
 			data = br.readLine();
+
+			br.close();
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
+		try {
+			br = new BufferedReader(new FileReader(new File(filePath + "-rooms.txt")));
+
+			String line;
+
+			while ((line = br.readLine()) != null) {
+
+				String[] split = line.split("-");
+
+				int roomID = Integer.parseInt(split[0]);
+				int startX = Integer.parseInt(split[1]);
+				int startY = Integer.parseInt(split[2]);
+				int width = Integer.parseInt(split[3]);
+				int height = Integer.parseInt(split[4]);
+
+				Room r = new Room(roomID, startX, startY, width, height);
+
+				if (split[5].equals("N")) {
+
+				} else {
+
+					if (split.length == 6) {
+						String[] doorOne = split[5].split("x");
+						int xLocOne = Integer.parseInt(doorOne[0]);
+						int yLocOne = Integer.parseInt(doorOne[1]);
+						r.addDoor(new Door(r, xLocOne, yLocOne, 0));
+
+					} else if (split.length == 7) {
+						String[] doorOne = split[5].split("x");
+						String[] doorTwo = split[6].split("x");
+						int xLocOne = Integer.parseInt(doorOne[0]);
+						int yLocOne = Integer.parseInt(doorOne[1]);
+						int xLocTwo = Integer.parseInt(doorTwo[0]);
+						int yLocTwo = Integer.parseInt(doorTwo[1]);
+						r.addDoor(new Door(r, xLocOne, yLocOne, 0));
+						r.addDoor(new Door(r, xLocTwo, yLocTwo, 0));
+
+					} else if (split.length == 8) {
+						String[] doorOne = split[5].split("x");
+						String[] doorTwo = split[6].split("x");
+						String[] doorThree = split[7].split("x");
+						int xLocOne = Integer.parseInt(doorOne[0]);
+						int yLocOne = Integer.parseInt(doorOne[1]);
+						int xLocTwo = Integer.parseInt(doorTwo[0]);
+						int yLocTwo = Integer.parseInt(doorTwo[1]);
+						int xLocThree = Integer.parseInt(doorThree[0]);
+						int yLocThree = Integer.parseInt(doorThree[1]);
+						r.addDoor(new Door(r, xLocOne, yLocOne, 0));
+						r.addDoor(new Door(r, xLocTwo, yLocTwo, 0));
+						r.addDoor(new Door(r, xLocThree, yLocThree, 0));
+
+					} else {
+						Log.print("TOO MANY DOORS");
+					}
+
+				}
+				rooms.add(r);
+			}
+
+			br.close();
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -178,6 +327,30 @@ public class Structure {
 		this.layout = layout;
 	}
 
+	public void setRoomData() {
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(rooms.size() + "=");
+
+		for (Room r : rooms) {
+
+			sb.append(r.getRoomID() + "-" + r.getStartX() + "-" + r.getStartY() + "-" + r.getRoomWidth() + "-"
+					+ r.getRoomHeight() + "-" + r.getRoomName() + "-" + r.getRoomTypeData() + "=");
+
+		}
+
+		String dataString = sb.toString();
+
+		roomData = dataString.substring(0, dataString.length() - 1);
+
+	}
+
+	public String getRoomData() {
+
+		return roomData;
+	}
+
 	public void parseTileData() {
 
 		int startIndex = 0;
@@ -196,8 +369,11 @@ public class Structure {
 				int val = Integer.parseInt(idata, 16);
 
 				checksum += val;
-
-				layout[x][y] = new StructureTileData(x, y, val);
+				boolean canWalk = true;
+				if (val == 1 || val == 2) {
+					canWalk = false;
+				}
+				layout[x][y] = new StructureTileData(x, y, val, canWalk, this);
 			}
 		}
 	}

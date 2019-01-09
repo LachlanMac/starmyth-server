@@ -10,7 +10,11 @@ import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import com.pineconeindustries.server.data.PlayerData;
+import com.pineconeindustries.server.data.Room;
 import com.pineconeindustries.server.data.Ship;
+import com.pineconeindustries.server.data.Structure;
+import com.pineconeindustries.server.data.factions.Faction;
+import com.pineconeindustries.server.data.map.Sector;
 import com.pineconeindustries.server.log.Log;
 import com.pineconeindustries.server.npcs.NPC;
 import com.pineconeindustries.server.utils.Vector2;
@@ -67,6 +71,72 @@ public class Database {
 
 		return success;
 
+	}
+
+	public ArrayBlockingQueue<Sector> loadSectors() {
+
+		ArrayBlockingQueue<Sector> sectors = new ArrayBlockingQueue<Sector>(64);
+
+		String sql = "SELECT * from sectors";
+		PreparedStatement stmt;
+		try {
+			stmt = conn.prepareStatement(sql);
+
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+
+				int sectorID = rs.getInt("sector_id");
+				String name = rs.getString("sector_name");
+				int galX = rs.getInt("galactic_x");
+				int galY = rs.getInt("galactic_y");
+				int factionID = rs.getInt("faction_id");
+
+				Sector s = new Sector(sectorID, name, galX, galY, factionID);
+				Log.database("Loaded Sector : " + s.getSectorID() + "  -  " + s.getSectorName());
+				sectors.add(s);
+
+			}
+		} catch (SQLException e) {
+			Log.database("Error Loading Sectors From Database");
+			e.printStackTrace();
+
+		}
+
+		return sectors;
+
+	}
+
+	public ArrayBlockingQueue<Faction> loadFactions() {
+
+		ArrayBlockingQueue<Faction> factions = new ArrayBlockingQueue<Faction>(32);
+
+		String sql = "SELECT * from factions";
+		PreparedStatement stmt;
+
+		try {
+			stmt = conn.prepareStatement(sql);
+
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				int id = rs.getInt("faction_id");
+				String name = rs.getString("faction_name");
+
+				Faction f = new Faction(id, name);
+
+				Log.database("Loaded Faction :" + f.getName());
+
+				factions.add(f);
+			}
+
+		} catch (SQLException e) {
+			Log.database("Error Loading Factions From Database");
+			e.printStackTrace();
+
+		}
+
+		return factions;
 	}
 
 	public PlayerData loadPlayer(int charID) {
@@ -152,7 +222,7 @@ public class Database {
 	public ArrayBlockingQueue<Ship> loadShips(int sector) {
 
 		Log.print("Loading ships for sector : " + sector);
-		String sql = "SELECT ship_id, ship_name, ship_class, x_pos, y_pos, local_x_pos, local_y_pos, file_path FROM ships WHERE sector_id = ?";
+		String sql = "SELECT ship_id, ship_name, ship_class, x_pos, y_pos, local_x_pos, local_y_pos FROM ships WHERE sector_id = ?";
 		ArrayBlockingQueue<Ship> ships = new ArrayBlockingQueue<Ship>(128);
 		PreparedStatement stmt;
 
@@ -170,11 +240,10 @@ public class Database {
 				float y = rs.getFloat("y_pos");
 				int localX = rs.getInt("local_x_pos");
 				int localY = rs.getInt("local_y_pos");
-				String path = rs.getString("file_path");
 
 				Log.database("Loaded Ship (id :" + shipID + " name:" + shipName + " in sector " + sector);
 
-				Ship ship = new Ship(shipID, sector, shipName, shipClass, x, y, localX, localY, 64, 64, path);
+				Ship ship = new Ship(shipID, sector, shipName, shipClass, x, y, localX, localY);
 
 				ships.add(ship);
 
@@ -187,6 +256,40 @@ public class Database {
 
 		return ships;
 
+	}
+
+	public void loadRoomDataForShips(Ship s) {
+
+		Log.print("Loading rooms for Ship : " + s.getName());
+
+		String sql = "SELECT * FROM ship_rooms WHERE ship_id = ?";
+		PreparedStatement stmt;
+
+		try {
+			stmt = conn.prepareStatement(sql);
+			stmt.setDouble(1, s.getID());
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+
+				int roomID = rs.getInt("room_id");
+
+				String roomType = rs.getString("room_type");
+				String roomName = rs.getString("room_name");
+
+				Room r = s.getRoomByID(roomID);
+				r.setRoomType(roomType);
+				r.setRoomName(roomName);
+
+				Log.database("Loaded Room Data for : " + r.getRoomName());
+
+			}
+
+		} catch (SQLException e) {
+			Log.database("Error Loading Ship From Database");
+			e.printStackTrace();
+		}
+
+		s.setRoomData();
 	}
 
 }

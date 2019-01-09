@@ -1,5 +1,7 @@
 package com.pineconeindustries.server;
 
+import com.pineconeindustries.server.data.global.Galaxy;
+import com.pineconeindustries.server.data.map.Sector;
 import com.pineconeindustries.server.database.Database;
 import com.pineconeindustries.server.log.Log;
 
@@ -12,8 +14,10 @@ public class Server {
 
 	ServerZone zone;
 
-	public Server() {
+	Galaxy galaxy;
 
+	public Server() {
+		galaxy = new Galaxy();
 		/*
 		 * this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); this.setSize(300, 100);
 		 * this.setTitle("Server"); this.setVisible(true);
@@ -41,10 +45,13 @@ public class Server {
 		Log.database("Connecting to Database at path " + DB_PATH);
 		db.connect();
 
-		for (int i = 27400; i < 27447; i++) {
+		galaxy.setFactions(db.loadFactions());
+		galaxy.setSectors(db.loadSectors());
 
-			ServerZone z = new ServerZone(i, "Meh", db);
-			z.startServer();
+		for (Sector s : galaxy.getSectors()) {
+
+			ServerZone zone = new ServerZone(s, db, galaxy);
+			zone.startServer();
 
 		}
 

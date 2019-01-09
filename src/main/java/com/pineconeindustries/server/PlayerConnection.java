@@ -196,8 +196,6 @@ public class PlayerConnection implements Runnable {
 
 							}
 
-						} else {
-
 						}
 
 					} else {
@@ -205,7 +203,7 @@ public class PlayerConnection implements Runnable {
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				// e.printStackTrace();
 				disconnect(e.getMessage());
 
 			}

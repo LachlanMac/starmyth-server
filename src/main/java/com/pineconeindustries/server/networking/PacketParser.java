@@ -21,36 +21,52 @@ public class PacketParser {
 
 	public void parse(Packet p) {
 
+		PlayerConnection conn = null;
+		PlayerData playerData = null;
+		boolean canMove = true;
+		Vector2 moveVector = null;
+		Vector2 adjustedMov = null;
+		Vector2 destination = null;
+		Vector2 currentPosition = null;
+		float velocity = 0;
+		int shipID = 0;
+		Ship ship = null;
+
 		switch (p.getType()) {
 
 		case Packet.MOVE_PACKET:
 
-			PlayerData d = zone.getDataByID(p.getPlayerID());
-			if (d == null) {
+			playerData = zone.getDataByID(p.getPlayerID());
+			if (playerData == null) {
 				return;
 			}
 
-			boolean canMove = true;
+			moveVector = MathUtils.getVectorFromString(p.getData());
 
-			Vector2 mov = MathUtils.getVectorFromString(p.getData());
+			currentPosition = new Vector2(playerData.getX(), playerData.getY());
 
-			Vector2 currentPos = new Vector2(d.getX(), d.getY());
+			adjustedMov = new Vector2(moveVector.x * Game.PLAYER_MOVE_SPEED, moveVector.y * Game.PLAYER_MOVE_SPEED);
 
-			Vector2 adjustedMov = new Vector2(mov.x * Game.PLAYER_MOVE_SPEED, mov.y * Game.PLAYER_MOVE_SPEED);
+			velocity = (Math.abs(adjustedMov.x) + Math.abs(adjustedMov.y)) / 2;
 
-			float velocity = (Math.abs(adjustedMov.x) + Math.abs(adjustedMov.y)) / 2;
+			destination = currentPosition
+					.add(new Vector2(moveVector.x * Game.PLAYER_MOVE_SPEED, moveVector.y * Game.PLAYER_MOVE_SPEED));
 
-			Vector2 destination = currentPos
-					.add(new Vector2(mov.x * Game.PLAYER_MOVE_SPEED, mov.y * Game.PLAYER_MOVE_SPEED));
+			canMove = playerData.getStructure().canMoveToPoint(playerData.getPlayerCenter(), destination, moveVector);
 
 			if (canMove) {
-				d.setX(destination.x);
-				d.setY(destination.y);
+				playerData.setX(destination.x);
+				playerData.setY(destination.y);
+
 				p.setData(MathUtils.getStringFromVector(destination) + "=" + adjustedMov.x + "=" + adjustedMov.y + "="
 						+ velocity);
 
-			}
+			} else {
 
+				p.setData(MathUtils.getStringFromVector(currentPosition) + "=" + adjustedMov.x + "=" + adjustedMov.y
+						+ "=" + velocity);
+
+			}
 			// TRY MOVE: IF SUCCESSFUL SEND TO ALL
 
 			zone.sendToAll(p);
@@ -59,19 +75,25 @@ public class PacketParser {
 
 		case Packet.SHIP_LAYOUT_PACKET:
 
-			PlayerConnection sConn = zone.getPlayerByID(p.getPlayerID());
-			if (sConn != null) {
-
-				int shipID = Integer.parseInt(p.getData());
-
-				Ship s = zone.getShipDataByID(shipID);
-
-				if (s != null) {
-
-					sConn.send(new Packet(0, Packet.SHIP_LAYOUT_PACKET, p.getData() + "=" + s.getData()));
-
+			conn = zone.getPlayerByID(p.getPlayerID());
+			if (conn != null) {
+				shipID = Integer.parseInt(p.getData());
+				ship = zone.getShipDataByID(shipID);
+				if (ship != null) {
+					conn.send(new Packet(0, Packet.SHIP_LAYOUT_PACKET, p.getData() + "=" + ship.getData()));
 				}
+			}
 
+			break;
+
+		case Packet.SHIP_ROOM_INFO_PACKET:
+
+			conn = zone.getPlayerByID(p.getPlayerID());
+			shipID = Integer.parseInt(p.getData());
+			ship = zone.getShipDataByID(shipID);
+
+			if (ship != null) {
+				conn.send(new Packet(0, Packet.SHIP_ROOM_INFO_PACKET, p.getData() + "=" + ship.getRoomData()));
 			}
 
 			break;
@@ -81,8 +103,8 @@ public class PacketParser {
 			break;
 		case Packet.LOCAL_CHAT_PACKET:
 
-			PlayerConnection pConn = zone.getPlayerByID(p.getPlayerID());
-			if (pConn == null) {
+			conn = zone.getPlayerByID(p.getPlayerID());
+			if (conn == null) {
 				Log.print("ERROR IN LOCAL CHAT PACKET");
 				return;
 			}
@@ -91,7 +113,7 @@ public class PacketParser {
 
 			for (PlayerConnection player : zone.getPlayers()) {
 
-				PlayerData playerData = pConn.getPlayerData();
+				playerData = conn.getPlayerData();
 
 				if (playerData != null) {
 

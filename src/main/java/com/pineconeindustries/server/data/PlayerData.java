@@ -1,5 +1,8 @@
 package com.pineconeindustries.server.data;
 
+import java.awt.Rectangle;
+
+import com.pineconeindustries.server.log.Log;
 import com.pineconeindustries.server.utils.Vector2;
 
 public class PlayerData {
@@ -13,12 +16,16 @@ public class PlayerData {
 	public PlayerData(String name, int charID, int sector, int model, float x, float y) {
 
 		this.name = name;
-
 		this.charID = charID;
 		this.sector = sector;
 		this.model = model;
 		this.x = x;
 		this.y = y;
+
+	}
+
+	public Vector2 getPlayerCenter() {
+		return new Vector2(x + 32, y - 32);
 	}
 
 	public String getName() {
@@ -59,14 +66,19 @@ public class PlayerData {
 
 	public void setX(float x) {
 		this.x = x;
+
 	}
 
 	public float getY() {
+
 		return y;
+
 	}
 
 	public void setY(float y) {
+
 		this.y = y;
+
 	}
 
 	public Vector2 getLocation() {
@@ -74,7 +86,12 @@ public class PlayerData {
 	}
 
 	public void setStructure(Structure s) {
-		System.out.println("Structure set to " + s.getName());
+		Log.print("Structure set to " + s.getName());
 		this.currentStructure = s;
 	}
+
+	public Structure getStructure() {
+		return currentStructure;
+	}
+
 }

@@ -4,6 +4,10 @@ public class Vector2 {
 
 	public float x, y;
 
+	public enum direction {
+		up, down, left, right, still;
+	}
+
 	public Vector2(float x, float y) {
 		this.x = x;
 		this.y = y;
@@ -21,6 +25,22 @@ public class Vector2 {
 		float yDiff = v.y - y;
 
 		return (float) Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
+
+	}
+
+	public direction getDirection() {
+
+		if (y > 0 && x == 0) {
+			return direction.up;
+		} else if (y < 0 && x == 0) {
+			return direction.down;
+		} else if (x > 0) {
+			return direction.right;
+		} else if (x < 0) {
+			return direction.left;
+		}
+
+		return direction.still;
 
 	}
 

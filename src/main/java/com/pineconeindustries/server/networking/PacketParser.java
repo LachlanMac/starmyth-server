@@ -58,13 +58,17 @@ public class PacketParser {
 				playerData.setX(destination.x);
 				playerData.setY(destination.y);
 
+				if (playerData.getStructure().getTileAt(destination.x, destination.y).getShipTileID() == 0) {
+					velocity = 999;
+				}
+
 				p.setData(MathUtils.getStringFromVector(destination) + "=" + adjustedMov.x + "=" + adjustedMov.y + "="
-						+ velocity);
+						+ velocity + "=" + playerData.getStructure().getID());
 
 			} else {
 
 				p.setData(MathUtils.getStringFromVector(currentPosition) + "=" + adjustedMov.x + "=" + adjustedMov.y
-						+ "=" + velocity);
+						+ "=" + velocity + "=" + playerData.getStructure().getID());
 
 			}
 			// TRY MOVE: IF SUCCESSFUL SEND TO ALL

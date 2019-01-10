@@ -1,0 +1,20 @@
+<?xml version = "1.0"?>
+
+<Config>
+	<ServerSettings> 
+		<GameServerIP>142.93.48.155</GameServerIP>
+		<WebServerIP>142.93.48.155</WebServerIP>
+		<WebServerPort>80</WebServerPort>
+	</ServerSettings>
+
+	<LoggingSettings>
+		<LoggingPath>log/log.txt</LoggingPath>
+		<Logging>true</Logging>
+	</LoggingSettings>
+
+
+	<DatabaseSettings>
+		<DatabasePath>data/data.db</DatabasePath>
+	</DatabaseSettings>
+</Config>
+

@@ -20,29 +20,36 @@ import com.pineconeindustries.server.networking.PacketParser;
 import com.pineconeindustries.server.npcs.NPC;
 import com.pineconeindustries.server.utils.MathUtils;
 
+/**
+ * ServerZone.java - Class that contains the logic for network transmission of
+ * data to and from clients. Implements Runnable thread for listening and
+ * sending packets via the TCP Protocol.
+ */
+
 public class ServerZone implements Runnable {
 
+	// the port this subserver is runnign on
 	private int port;
+	// name of the sector
 	private String name;
-	private boolean isConnected;
-	private boolean stateChange = false;
-
+	// Logic Threads
 	Thread runThread;
 	SenderThread senderThread;
+	// Socket
 	ServerSocket zoneServer;
+	// IO
 	BufferedReader in;
 	PrintWriter out;
-
+	// Threadsafe Queues
 	ArrayBlockingQueue<PlayerConnection> players;
 	ArrayBlockingQueue<Ship> ships;
 	ArrayBlockingQueue<NPC> npcs;
 	ArrayBlockingQueue<Packet> sendToAllQueue;
-
 	ArrayBlockingQueue<Packet> sendToPlayer;
-
 	ArrayBlockingQueue<Packet> inPacketQueue;
-
+	// Handles parsing packets coming from clients
 	PacketParser parser;
+	// REFS
 	Database db;
 	Galaxy galaxy;
 	Sector sector;
@@ -53,14 +60,17 @@ public class ServerZone implements Runnable {
 		this.sector = sector;
 		this.name = sector.getSectorName();
 		this.port = sector.getSectorID();
+
+		// declare thread logic
 		runThread = new Thread(this);
 		senderThread = new SenderThread(this);
+
+		// Initialize queues
 		players = new ArrayBlockingQueue<PlayerConnection>(1024);
-
 		sendToAllQueue = new ArrayBlockingQueue<Packet>(2048);
-
 		sendToPlayer = new ArrayBlockingQueue<Packet>(1024);
 
+		// Initialize parser
 		parser = new PacketParser(this);
 
 	}
@@ -68,11 +78,9 @@ public class ServerZone implements Runnable {
 	public void startServer() {
 
 		try {
-
 			Log.network("ServerZone:" + port + " started");
 
 			zoneServer = new ServerSocket(port);
-			isConnected = true;
 			runThread.start();
 			senderThread.start();
 
@@ -142,14 +150,6 @@ public class ServerZone implements Runnable {
 
 		}
 
-	}
-
-	public boolean hasStateChanged() {
-		return stateChange;
-	}
-
-	public void resetState() {
-		stateChange = false;
 	}
 
 	public void sendToAll(Packet p) {
@@ -302,7 +302,6 @@ public class ServerZone implements Runnable {
 				PlayerConnection p = new PlayerConnection(s, this, parser, db);
 				p.startConnection();
 				players.add(p);
-				stateChange = true;
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -351,7 +350,7 @@ class SenderThread extends Thread {
 					Packet updatePacket = new Packet(0, Packet.SHIP_INFO_PACKET, data);
 					updatePacket.encode();
 					zone.sendToAll(updatePacket);
-					zone.resetState();
+
 				}
 
 			case 400:
@@ -363,7 +362,7 @@ class SenderThread extends Thread {
 					Packet updatePacket = new Packet(0, Packet.ZONE_PLAYER_INFO_PACKET, data);
 					updatePacket.encode();
 					zone.sendToAll(updatePacket);
-					zone.resetState();
+
 				}
 
 			}

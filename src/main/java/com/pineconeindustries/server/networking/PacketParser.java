@@ -1,14 +1,13 @@
 package com.pineconeindustries.server.networking;
 
 import java.util.ArrayList;
-import java.util.concurrent.ArrayBlockingQueue;
 import com.pineconeindustries.server.PlayerConnection;
 import com.pineconeindustries.server.ServerZone;
-import com.pineconeindustries.server.config.Game;
 import com.pineconeindustries.server.data.PlayerData;
 import com.pineconeindustries.server.data.Ship;
 import com.pineconeindustries.server.log.Log;
 import com.pineconeindustries.server.utils.MathUtils;
+import com.pineconeindustries.server.utils.Units;
 import com.pineconeindustries.server.utils.Vector2;
 
 public class PacketParser {
@@ -45,12 +44,12 @@ public class PacketParser {
 
 			currentPosition = new Vector2(playerData.getX(), playerData.getY());
 
-			adjustedMov = new Vector2(moveVector.x * Game.PLAYER_MOVE_SPEED, moveVector.y * Game.PLAYER_MOVE_SPEED);
+			adjustedMov = new Vector2(moveVector.x * Units.PLAYER_MOVE_SPEED, moveVector.y * Units.PLAYER_MOVE_SPEED);
 
 			velocity = (Math.abs(adjustedMov.x) + Math.abs(adjustedMov.y)) / 2;
 
 			destination = currentPosition
-					.add(new Vector2(moveVector.x * Game.PLAYER_MOVE_SPEED, moveVector.y * Game.PLAYER_MOVE_SPEED));
+					.add(new Vector2(moveVector.x * Units.PLAYER_MOVE_SPEED, moveVector.y * Units.PLAYER_MOVE_SPEED));
 
 			canMove = playerData.getStructure().canMoveToPoint(playerData.getPlayerCenter(), destination, moveVector);
 

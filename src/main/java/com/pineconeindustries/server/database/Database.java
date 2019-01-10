@@ -181,11 +181,10 @@ public class Database {
 
 	public Connection getConnection() {
 		return conn;
-
 	}
 
 	public ArrayBlockingQueue<NPC> loadNPCs(int sector) {
-		Log.print("Loading npcs for sector : " + sector);
+		Log.database("Loading npcs for sector : " + sector);
 		ArrayBlockingQueue<NPC> npcList = new ArrayBlockingQueue<NPC>(1024);
 		String sql = "SELECT npc_id, npc_name, x_pos, y_pos, faction_id FROM npcs WHERE sector_id = ?";
 		PreparedStatement stmt;
@@ -221,7 +220,7 @@ public class Database {
 
 	public ArrayBlockingQueue<Ship> loadShips(int sector) {
 
-		Log.print("Loading ships for sector : " + sector);
+		Log.database("Loading ships for sector : " + sector);
 		String sql = "SELECT ship_id, ship_name, ship_class, x_pos, y_pos, local_x_pos, local_y_pos FROM ships WHERE sector_id = ?";
 		ArrayBlockingQueue<Ship> ships = new ArrayBlockingQueue<Ship>(128);
 		PreparedStatement stmt;

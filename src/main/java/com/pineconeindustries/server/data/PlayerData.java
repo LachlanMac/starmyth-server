@@ -1,7 +1,5 @@
 package com.pineconeindustries.server.data;
 
-import java.awt.Rectangle;
-
 import com.pineconeindustries.server.log.Log;
 import com.pineconeindustries.server.utils.Vector2;
 

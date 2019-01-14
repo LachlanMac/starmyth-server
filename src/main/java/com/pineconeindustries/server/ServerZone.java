@@ -213,8 +213,8 @@ public class ServerZone implements Runnable {
 
 	public Structure getStructureAt(float x, float y) {
 
-		int quadrantX = ((int) x % (128 * 64)) / (128 * 64);
-		int quadrantY = ((int) y % (128 * 64)) / (128 * 64);
+		int quadrantX = (int) x / 8192;
+		int quadrantY = (int) y / 8192;
 
 		Structure struct = null;
 

@@ -47,6 +47,16 @@ public class PacketParser {
 
 			currentPosition = new Vector2(playerData.getX(), playerData.getY());
 
+			boolean structureChange = playerData.structureChanged();
+			System.out.println("STRUCTURE CHANGED = " + structureChange);
+
+			if (structureChange) {
+
+				int structureID = zone.getStructureAt(playerData.getX(), playerData.getY()).getID();
+				System.out.println("NEW STRUCTURE! " + structureID);
+
+			}
+
 			adjustedMov = new Vector2(moveVector.x * Units.PLAYER_MOVE_SPEED, moveVector.y * Units.PLAYER_MOVE_SPEED);
 
 			velocity = (Math.abs(adjustedMov.x) + Math.abs(adjustedMov.y)) / 2;

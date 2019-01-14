@@ -11,6 +11,8 @@ public class PlayerData {
 
 	Structure currentStructure;
 
+	int localX, localY;
+
 	public PlayerData(String name, int charID, int sector, int model, float x, float y) {
 
 		this.name = name;
@@ -19,6 +21,19 @@ public class PlayerData {
 		this.model = model;
 		this.x = x;
 		this.y = y;
+
+		this.localX = (int) x / 8192;
+		this.localY = (int) y / 8192;
+
+	}
+
+	public boolean structureChanged() {
+
+		if (localX != (int) (x / 8192) || localY != (int) (y / 8192)) {
+			return true;
+		} else {
+			return false;
+		}
 
 	}
 

@@ -218,7 +218,7 @@ public class ServerZone implements Runnable {
 
 		Structure struct = null;
 
-		System.out.println(quadrantX + " , " + quadrantY);
+		System.out.println(quadrantX + " , " + quadrantY + "  SOMEHOW FROM : " + x + " , " + y);
 
 		for (Ship s : ships) {
 
@@ -230,8 +230,9 @@ public class ServerZone implements Runnable {
 		}
 
 		for (Station s : stations) {
-			System.out.println("FOUND STATION");
+
 			if (quadrantX == s.getQuadrantX() && quadrantY == s.getQuadrantY()) {
+				System.out.println("FOUND STATION");
 				struct = s;
 			}
 		}

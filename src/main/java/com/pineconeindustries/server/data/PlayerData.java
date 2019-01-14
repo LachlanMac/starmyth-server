@@ -83,6 +83,7 @@ public class PlayerData {
 	}
 
 	public void setX(float x) {
+		localX = (int) x / 8192;
 		this.x = x;
 
 	}
@@ -95,11 +96,13 @@ public class PlayerData {
 
 	public void setY(float y) {
 
+		localX = (int) y / 8192;
 		this.y = y;
 
 	}
 
 	public Vector2 getLocation() {
+
 		return new Vector2(x, y);
 	}
 

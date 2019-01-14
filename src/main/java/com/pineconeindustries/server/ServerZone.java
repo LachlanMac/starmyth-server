@@ -10,6 +10,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 import com.pineconeindustries.server.data.PlayerData;
 import com.pineconeindustries.server.data.Ship;
+import com.pineconeindustries.server.data.Station;
 import com.pineconeindustries.server.data.Structure;
 import com.pineconeindustries.server.data.global.Galaxy;
 import com.pineconeindustries.server.data.map.Sector;
@@ -43,6 +44,7 @@ public class ServerZone implements Runnable {
 	// Threadsafe Queues
 	ArrayBlockingQueue<PlayerConnection> players;
 	ArrayBlockingQueue<Ship> ships;
+	ArrayBlockingQueue<Station> stations;
 	ArrayBlockingQueue<NPC> npcs;
 	ArrayBlockingQueue<Packet> sendToAllQueue;
 	ArrayBlockingQueue<Packet> sendToPlayer;
@@ -106,6 +108,22 @@ public class ServerZone implements Runnable {
 
 	}
 
+	public Station getStationDataByID(int id) {
+
+		Station data = null;
+
+		for (Station station : stations) {
+
+			if (id == station.getID()) {
+				data = station;
+			}
+
+		}
+
+		return data;
+
+	}
+
 	public PlayerData getDataByID(int id) {
 
 		PlayerData data = null;
@@ -142,11 +160,20 @@ public class ServerZone implements Runnable {
 
 	}
 
+	public void loadStations() {
+		stations = db.loadStations(port);
+	}
+
 	public void loadRooms() {
 
 		for (Ship s : ships) {
 
 			db.loadRoomDataForShips(s);
+
+		}
+
+		for (Station s : stations) {
+			db.loadRoomDataForStations(s);
 
 		}
 
@@ -216,6 +243,28 @@ public class ServerZone implements Runnable {
 		}
 
 		if (shipCount == 0) {
+			return "EMPTY";
+		}
+
+		String data = sb.toString();
+
+		return data.substring(0, data.length() - 1);
+
+	}
+
+	public String getStationInfoUpdatePacket() {
+
+		int stationCount = 0;
+		StringBuilder sb = new StringBuilder();
+
+		for (Station station : stations) {
+			stationCount++;
+			sb.append(station.getID() + "-" + station.getName() + "-" + station.getStructureClass() + "-"
+					+ station.getQuadrantX() + "-" + station.getQuadrantY() + "-" + station.getChecksum() + "=");
+
+		}
+
+		if (stationCount == 0) {
 			return "EMPTY";
 		}
 
@@ -320,6 +369,7 @@ class SenderThread extends Thread {
 	public SenderThread(ServerZone zone) {
 		this.zone = zone;
 		zone.loadShips();
+		zone.loadStations();
 		zone.loadNPCs();
 		zone.loadRooms();
 	}
@@ -352,6 +402,21 @@ class SenderThread extends Thread {
 					zone.sendToAll(updatePacket);
 
 				}
+				break;
+
+			case 300:
+
+				data = zone.getStationInfoUpdatePacket();
+
+				if (!data.equals("EMPTY")) {
+
+					Packet updatePacket = new Packet(0, Packet.STATION_INFO_PACKET, data);
+					updatePacket.encode();
+					zone.sendToAll(updatePacket);
+
+				}
+
+				break;
 
 			case 400:
 
@@ -365,6 +430,10 @@ class SenderThread extends Thread {
 
 				}
 
+				break;
+
+			default:
+				break;
 			}
 
 			if (counter >= 1000) {

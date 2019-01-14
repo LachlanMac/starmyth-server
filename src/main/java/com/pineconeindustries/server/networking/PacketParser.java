@@ -5,6 +5,7 @@ import com.pineconeindustries.server.PlayerConnection;
 import com.pineconeindustries.server.ServerZone;
 import com.pineconeindustries.server.data.PlayerData;
 import com.pineconeindustries.server.data.Ship;
+import com.pineconeindustries.server.data.Station;
 import com.pineconeindustries.server.log.Log;
 import com.pineconeindustries.server.utils.MathUtils;
 import com.pineconeindustries.server.utils.Units;
@@ -29,7 +30,9 @@ public class PacketParser {
 		Vector2 currentPosition = null;
 		float velocity = 0;
 		int shipID = 0;
+		int stationID = 0;
 		Ship ship = null;
+		Station station = null;
 
 		switch (p.getType()) {
 
@@ -97,6 +100,31 @@ public class PacketParser {
 
 			if (ship != null) {
 				conn.send(new Packet(0, Packet.SHIP_ROOM_INFO_PACKET, p.getData() + "=" + ship.getRoomData()));
+			}
+
+			break;
+
+		case Packet.STATION_LAYOUT_PACKET:
+
+			conn = zone.getPlayerByID(p.getPlayerID());
+			if (conn != null) {
+				stationID = Integer.parseInt(p.getData());
+				station = zone.getStationDataByID(stationID);
+				if (station != null) {
+					conn.send(new Packet(0, Packet.STATION_LAYOUT_PACKET, p.getData() + "=" + station.getData()));
+				}
+			}
+
+			break;
+
+		case Packet.STATION_ROOM_INFO_PACKET:
+
+			conn = zone.getPlayerByID(p.getPlayerID());
+			stationID = Integer.parseInt(p.getData());
+			station = zone.getStationDataByID(stationID);
+
+			if (station != null) {
+				conn.send(new Packet(0, Packet.STATION_ROOM_INFO_PACKET, p.getData() + "=" + station.getRoomData()));
 			}
 
 			break;

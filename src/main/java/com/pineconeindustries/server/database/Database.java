@@ -12,6 +12,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import com.pineconeindustries.server.data.PlayerData;
 import com.pineconeindustries.server.data.Room;
 import com.pineconeindustries.server.data.Ship;
+import com.pineconeindustries.server.data.Station;
 import com.pineconeindustries.server.data.Structure;
 import com.pineconeindustries.server.data.factions.Faction;
 import com.pineconeindustries.server.data.map.Sector;
@@ -254,6 +255,80 @@ public class Database {
 		}
 
 		return ships;
+
+	}
+
+	public ArrayBlockingQueue<Station> loadStations(int sector) {
+
+		Log.database("Loading stations for sector : " + sector);
+		String sql = "SELECT station_id, station_name, station_class, x_pos, y_pos, local_x_pos, local_y_pos FROM stations WHERE sector_id = ?";
+		ArrayBlockingQueue<Station> stations = new ArrayBlockingQueue<Station>(128);
+		PreparedStatement stmt;
+
+		try {
+			stmt = conn.prepareStatement(sql);
+			stmt.setDouble(1, sector);
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+
+				int stationID = rs.getInt("station_id");
+				String stationName = rs.getString("station_name");
+				String stationClass = rs.getString("station_class");
+				float x = rs.getFloat("x_pos");
+				float y = rs.getFloat("y_pos");
+				int localX = rs.getInt("local_x_pos");
+				int localY = rs.getInt("local_y_pos");
+
+				Log.database("Loaded Station (id :" + stationID + " name:" + stationName + " in sector " + sector);
+
+				Station ship = new Station(stationID, sector, stationName, stationClass, x, y, localX, localY);
+
+				stations.add(ship);
+
+			}
+
+		} catch (SQLException e) {
+			Log.database("Error Loading Stations From Database");
+			e.printStackTrace();
+		}
+
+		return stations;
+
+	}
+
+	public void loadRoomDataForStations(Station s) {
+
+		Log.print("Loading rooms for Ship : " + s.getName());
+
+		String sql = "SELECT * FROM station_rooms WHERE station_id = ?";
+		PreparedStatement stmt;
+
+		try {
+			stmt = conn.prepareStatement(sql);
+			stmt.setDouble(1, s.getID());
+			ResultSet rs = stmt.executeQuery();
+			while (rs.next()) {
+
+				int roomID = rs.getInt("room_id");
+
+				String roomType = rs.getString("room_type");
+				String roomName = rs.getString("room_name");
+
+				Room r = s.getRoomByID(roomID);
+				r.setRoomType(roomType);
+				r.setRoomName(roomName);
+
+				Log.database("Loaded Room Data for : " + r.getRoomName());
+
+			}
+
+		} catch (SQLException e) {
+			Log.database("Error Loading Stations From Database");
+			e.printStackTrace();
+		}
+
+		s.setRoomData();
 
 	}
 

@@ -74,6 +74,21 @@ CREATE TABLE ships(
                 FOREIGN KEY(sector_id) REFERENCES sectors(sector_id)
                 );
 
+
+DROP TABLE IF EXISTS stations;
+CREATE TABLE stations(
+                station_id INTEGER PRIMARY KEY ASC,
+                station_name TEXT,
+                station_class TEXT,
+                sector_id INTEGER,
+                x_pos FLOAT,
+                y_pos FLOAT,
+                local_x_pos INTEGER,
+                local_y_pos INTEGER,
+                FOREIGN KEY(sector_id) REFERENCES sectors(sector_id)
+                );
+
+
 DROP TABLE IF EXISTS ship_rooms;
 CREATE TABLE ship_rooms(
 		room_id INTEGER,
@@ -81,6 +96,15 @@ CREATE TABLE ship_rooms(
 		room_type TEXT,
 		room_name TEXT,
 		FOREIGN KEY(ship_id) REFERENCES ships(ship_id)
+);
+
+DROP TABLE IF EXISTS station_rooms;
+CREATE TABLE station_rooms(
+		room_id INTEGER,
+		station_id INTEGER,
+		room_type TEXT,
+		room_name TEXT,
+		FOREIGN KEY(station_id) REFERENCES ships(station_id)
 );
 
 INSERT INTO "factions" VALUES(0, 'None');
@@ -157,6 +181,8 @@ INSERT INTO "users" VALUES(1003, 'testclient3', 'pass', '$2a$04$4wbYlcHJ71Zfb42P
 
 INSERT INTO "ships" VALUES(100, 'Ragnarok', 'Cruiser_A', 27422, 0, 0, 0, 0);
 INSERT INTO "ships" VALUES(101, 'Shenigan', 'Cruiser_A', 27422, 0, 0, 1, 1);
+
+INSERT INTO "stations" VALUES(1, 'DarNuraOutpost', 'Outpost_A', 27422, 0, 0, 3, 3);
 
 
 INSERT INTO "ship_rooms" VALUES(0, 100, 'bridge', 'The Bridge');

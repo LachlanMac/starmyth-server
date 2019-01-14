@@ -85,7 +85,6 @@ public class PacketParser {
 			if (canMove) {
 				playerData.setX(destination.x);
 				playerData.setY(destination.y);
-				
 
 				if (playerData.getStructure() != null) {
 					if (playerData.getStructure().getTileAt(destination.x, destination.y).getShipTileID() == 0) {

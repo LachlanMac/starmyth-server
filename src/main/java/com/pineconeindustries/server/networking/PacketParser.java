@@ -52,7 +52,7 @@ public class PacketParser {
 
 			if (structureChange) {
 
-				Structure tmpStruct = zone.getStructureAt(playerData.getX(), playerData.getY());
+				Structure tmpStruct = zone.getStructureAt(playerData.getLocation().x, playerData.getLocation().y);
 
 				if (tmpStruct != null) {
 					playerData.setStructure(tmpStruct);

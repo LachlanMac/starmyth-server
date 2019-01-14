@@ -6,6 +6,7 @@ import com.pineconeindustries.server.ServerZone;
 import com.pineconeindustries.server.data.PlayerData;
 import com.pineconeindustries.server.data.Ship;
 import com.pineconeindustries.server.data.Station;
+import com.pineconeindustries.server.data.Structure;
 import com.pineconeindustries.server.log.Log;
 import com.pineconeindustries.server.utils.MathUtils;
 import com.pineconeindustries.server.utils.Units;
@@ -48,12 +49,16 @@ public class PacketParser {
 			currentPosition = new Vector2(playerData.getX(), playerData.getY());
 
 			boolean structureChange = playerData.structureChanged();
-			System.out.println("STRUCTURE CHANGED = " + structureChange);
 
 			if (structureChange) {
 
-				int structureID = zone.getStructureAt(playerData.getX(), playerData.getY()).getID();
-				System.out.println("NEW STRUCTURE! " + structureID);
+				Structure tmpStruct = zone.getStructureAt(playerData.getX(), playerData.getY());
+
+				if (tmpStruct != null) {
+					playerData.setStructure(tmpStruct);
+				} else {
+					playerData.setStructure(null);
+				}
 
 			}
 
@@ -64,23 +69,35 @@ public class PacketParser {
 			destination = currentPosition
 					.add(new Vector2(moveVector.x * Units.PLAYER_MOVE_SPEED, moveVector.y * Units.PLAYER_MOVE_SPEED));
 
-			canMove = playerData.getStructure().canMoveToPoint(playerData.getPlayerCenter(), destination, moveVector);
+			int structureID = 0;
+
+			if (playerData.getStructure() == null) {
+				canMove = true;
+				structureID = 0;
+
+			} else {
+				canMove = playerData.getStructure().canMoveToPoint(playerData.getPlayerCenter(), destination,
+						moveVector);
+
+				structureID = playerData.getStructure().getID();
+			}
 
 			if (canMove) {
 				playerData.setX(destination.x);
 				playerData.setY(destination.y);
 
-				if (playerData.getStructure().getTileAt(destination.x, destination.y).getShipTileID() == 0) {
-					velocity = 999;
+				if (playerData.getStructure() != null) {
+					if (playerData.getStructure().getTileAt(destination.x, destination.y).getShipTileID() == 0) {
+						velocity = 999;
+					}
 				}
-
 				p.setData(MathUtils.getStringFromVector(destination) + "=" + adjustedMov.x + "=" + adjustedMov.y + "="
-						+ velocity + "=" + playerData.getStructure().getID());
+						+ velocity + "=" + structureID);
 
 			} else {
 
 				p.setData(MathUtils.getStringFromVector(currentPosition) + "=" + adjustedMov.x + "=" + adjustedMov.y
-						+ "=" + velocity + "=" + playerData.getStructure().getID());
+						+ "=" + velocity + "=" + structureID);
 
 			}
 			// TRY MOVE: IF SUCCESSFUL SEND TO ALL

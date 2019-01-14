@@ -29,7 +29,12 @@ public class PlayerData {
 
 	public boolean structureChanged() {
 
-		if (localX != (int) (x / 8192) || localY != (int) (y / 8192)) {
+		int tmpX = (int) x / 8192;
+		int tmpY = (int) y / 8192;
+
+		if (localX != tmpX || localY != tmpY) {
+			localX = tmpX;
+			localY = tmpY;
 			return true;
 		} else {
 			return false;

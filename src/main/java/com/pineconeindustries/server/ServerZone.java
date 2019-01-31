@@ -295,7 +295,8 @@ public class ServerZone implements Runnable {
 
 			if (player.isReady() && player.isConnected()) {
 
-				sb.append(player.getPlayerData().getCharID() + "," + player.getPlayerData().getName() + "=");
+				sb.append(player.getPlayerData().getCharID() + "," + player.getPlayerData().getName() + ","
+						+ player.getPlayerData().getModel() + "=");
 
 				playerCount++;
 			}

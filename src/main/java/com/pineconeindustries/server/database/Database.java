@@ -155,7 +155,7 @@ public class Database {
 			while (rs.next()) {
 
 				String charName = rs.getString("character_name");
-				int charModel = rs.getInt("character_model");
+				String charModel = rs.getString("character_model");
 				float x = rs.getFloat("x_pos");
 				float y = rs.getFloat("y_pos");
 				int sID = rs.getInt("sector_id");

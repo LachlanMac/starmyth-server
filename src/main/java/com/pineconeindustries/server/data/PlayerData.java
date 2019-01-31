@@ -5,15 +5,15 @@ import com.pineconeindustries.server.utils.Vector2;
 
 public class PlayerData {
 
-	private String name;
-	private int charID, sector, model;
+	private String name, model;
+	private int charID, sector;
 	private float x, y;
 
 	Structure currentStructure;
 
 	int localX, localY;
 
-	public PlayerData(String name, int charID, int sector, int model, float x, float y) {
+	public PlayerData(String name, int charID, int sector, String model, float x, float y) {
 
 		this.name = name;
 		this.charID = charID;
@@ -70,11 +70,11 @@ public class PlayerData {
 		this.sector = sector;
 	}
 
-	public int getModel() {
+	public String getModel() {
 		return model;
 	}
 
-	public void setModel(int model) {
+	public void setModel(String model) {
 		this.model = model;
 	}
 
